@@ -106,7 +106,7 @@ def get_help_batch(cur_ids, losses, args, help_dataset):
         help = help_dataset[help_dataset['id'] == pair[0]]
         if len(help):
             # concat dataset, get max 5 examples on each
-            df_ = pd.concat([df_, help.sample(frac=1).reset_index(drop=True)[:5]], axis=0)
+            df_ = pd.concat([df_, help.sample(n=min(len(help), args.examples))], axis=0)
             # no need to collect more then batch size
             if len(df_) > args.batch_size:
                 break

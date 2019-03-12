@@ -1,7 +1,6 @@
 import os
 from collections import defaultdict
 
-import tensorflow as tf
 import pandas as pd
 import numpy as np
 from bpemb import BPEmb
@@ -70,6 +69,7 @@ def create_vocab(main_cfg, bpemb):
     # load files with non-bpe data
     train_data = pd.read_csv(os.path.join(main_cfg.data_dir, main_cfg.train_file), header=None, sep='\t',
                              names=COL_NAMES).dropna()
+    print('TRAIN DATA WAS LOADED')
     train_data.fake = train_data.fake.astype(int)
     dev_data = pd.read_csv(os.path.join(main_cfg.data_dir, main_cfg.dev_file), header=None, sep='\t',
                            names=COL_NAMES).dropna()
@@ -136,6 +136,7 @@ def get_vocab(main_config, args, logger):
     else:
         logger.info('No "{}" or bpe files found in data folder, creating new vocab.'.format(main_cfg.vocab_file))
         bpemb = BPEmb(lang="en", dim=main_cfg.embedding_size, vs=main_cfg.emb_vocab_size)
+        logger.info('Bemb loaded')
         vocab = create_vocab(main_cfg, bpemb)
         write_vocab(main_cfg, vocab)
 

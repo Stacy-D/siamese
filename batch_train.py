@@ -92,6 +92,8 @@ def train(main_config, args):
         session.run(train_iter.initializer, feed_dict={batch_size: main_cfg.batch_size})
         session.run(dev_run_iter.initializer, feed_dict={batch_size: main_cfg.eval_batch_size})
         logger.info('Starting training...')
+        warm_up=2
+        warmed= False
         while patience_left:
             try:
                 # run train batch
@@ -107,13 +109,15 @@ def train(main_config, args):
                 session.run(dev_iter.initializer, feed_dict={batch_size: main_cfg.eval_batch_size})
                 all_dev_acc, all_dev_loss = model_evaluator.evaluate_dev(dev_handle, global_step, logger)
                 session.run(model.inc_gstep)  # decay LR
-
+                warm_up-=1
+                warmed=(warm_up<0)
                 if all_dev_acc > best_accuracy:
                     best_accuracy = all_dev_acc
                     best_ckpt_saver.handle(all_dev_acc, session, step)
                     patience_left = main_cfg.patience
                 else:
                     patience_left -= 1
+                    logger.info('Patience left {}'.format(patience_left))
                 if best_loss > all_dev_loss:
                     best_loss = all_dev_loss
 
@@ -179,7 +183,10 @@ def main():
                         default='fake.bpe.tsv',
                         type=str,
                         help='name of fake data file')
-
+    parser.add_argument('--examples',
+                        default=5,
+                        type=int,
+                        help='number of examples per hard pair')
     args = parser.parse_args()
     logger.info(args)
     if args.embeddings == 'no':
